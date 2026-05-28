@@ -1,0 +1,50 @@
+services:
+  lkfailover:
+    build: .
+    container_name: lkfailover
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      FAILOVER_CONFIG_JSON: >
+        {
+          "server_name": "mmm.cl",
+          "listen_port": 80,
+          "routing_mode": "proxy",
+          "check_interval_seconds": 5,
+          "connect_timeout_seconds": 2,
+          "read_timeout_seconds": 20,
+          "fail_threshold": 2,
+          "recover_threshold": 1,
+          "fallback_title": "Servicio temporalmente no disponible",
+          "fallback_message": "Estamos usando una página de respaldo mientras se recupera el servicio principal.",
+          "targets": [
+            {
+              "name": "principal-ip-1",
+              "proxy_url": "http://1.1.1.1",
+              "health_url": "http://1.1.1.1/",
+              "host_header": "mmm.cl",
+              "priority": 1
+            },
+            {
+              "name": "alternativa-ip-2",
+              "proxy_url": "http://2.2.2.2",
+              "health_url": "http://2.2.2.2/",
+              "host_header": "mmm.cl",
+              "priority": 2
+            }
+          ],
+          "fallback": {
+            "type": "static",
+            "name": "html-local"
+          }
+        }
+
+  # Ejemplo opcional: si quieres que el fallback sea otro microservicio Docker,
+  # descomenta este servicio y cambia fallback.type a "proxy" con proxy_url "http://fallback:80".
+  # fallback:
+  #   image: nginx:alpine
+  #   container_name: lkfailover_fallback
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./public:/usr/share/nginx/html:ro
