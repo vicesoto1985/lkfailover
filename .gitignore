@@ -1,0 +1,16 @@
+# Sistema
+.DS_Store
+
+# Entorno
+.env
+*.local
+
+# Logs
+*.log
+
+# Python
+__pycache__/
+*.pyc
+
+# Docker temporales
+tmp/
